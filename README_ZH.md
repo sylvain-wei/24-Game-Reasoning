@@ -182,7 +182,7 @@ python scripts/evaluation/eval.py --base_model_path /path/to/model --val_data_pa
 @misc{24GameReasoning2024,
   author = {Wei, Shaohang},
   title = {24-Game-Reasoning: Enhancing LLM's Reasoning and Self-Verification Capabilities},
-  year = {2024},
+  year = {2025},
   publisher = {GitHub},
   journal = {GitHub Repository},
   howpublished = {\url{https://github.com/sylvain-wei/24-Game-Reasoning}}

@@ -182,7 +182,7 @@ If you use this project in your research, please cite it using the following for
 @misc{24GameReasoning2024,
   author = {Wei, Shaohang},
   title = {24-Game-Reasoning: Enhancing LLM's Reasoning and Self-Verification Capabilities},
-  year = {2024},
+  year = {2025},
   publisher = {GitHub},
   journal = {GitHub Repository},
   howpublished = {\url{https://github.com/sylvain-wei/24-Game-Reasoning}}
