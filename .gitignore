@@ -1,0 +1,94 @@
+# 忽略参考资料
+参考/
+
+# Python相关
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# 虚拟环境
+venv/
+ENV/
+env/
+
+# 模型检查点和大型文件
+verl/checkpoints/
+verl/wandb/
+verl/outputs/
+*.pt
+*.pth
+*.bin
+*.ckpt
+*.model
+*.safetensors
+*.h5
+
+# 评估结果和大型JSON文件
+results/*.json
+evaluation_results_*.json
+*_results.json
+
+# 日志文件
+*.log
+logs/
+wandb/
+**/wandb/
+**/.wandb/
+**/logs/
+**/.logs/
+
+# 系统文件
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+**/.ipynb_checkpoints/
+
+# Git相关
+**/.git/
+
+# 忽略apex库（太大）
+apex/
+
+# 忽略大型临时文件
+*.tmp
+*.temp
+*.bak
+
+# 保留data目录结构但忽略大文件
+data/**/*.parquet
+data/**/*.json
+data/**/*.jsonl
+data/**/*.csv
+data/**/*.tsv
+data/**/*.txt
+!data/**/README.md
+!data/**/metadata.json
+
+# 保留必要的目录结构
+!data/
+!verl/
+!scripts/
+!templates/
+!utils/
+!images/
+!results/
+!docs/

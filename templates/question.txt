@@ -1,0 +1,16 @@
+24 Points is a classic mathematical game that requires the result of operations on four numbers to equal 24.  
+Given a deck of playing cards, the objective is to use the numbers on four cards and the operations of addition, subtraction, multiplication, and division to ultimately achieve the result of 24.
+
+Rules:  
+1. Each card must be used exactly once.  
+2. The four operations of addition (+), subtraction (-), multiplication (×), and division (÷) are allowed.  
+3. Parentheses () can be used to change the order of operations.  
+4. No other operation symbols or numbers are allowed.  
+5. Division results can be decimals or infinite non-terminating decimals.
+
+Example: For the four cards 3, 3, 8, 8, the expression (8 ÷ 3 × (3 - 8 ÷ 3)) = 24 can be used to reach the answer.
+
+Below are four randomly drawn cards from a deck of playing cards. Please determine whether it is possible to obtain 24 through operations.  
+If possible, provide one way to achieve it(NOTE: There should be no other characters. Only equation is allowed. You should only answer "EQUATION", where EQUATION can be like "(8 ÷ 3 × (3 - 8 ÷ 3)) = 24"); otherwise, output "NO."
+
+Cards:{card1}, {card2}, {card3}, {card4}
