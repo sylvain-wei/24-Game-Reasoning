@@ -128,7 +128,7 @@ python scripts/evaluation/eval.py --base_model_path /path/to/model --val_data_pa
 </div>
 
 <div align="center">
-  <img src="images/results/accuracy_trend_sft_qwen_2.5_math_7b.png" alt="SFT准确率变化趋势" width="400"/>
+  <img src="images/results/accuracy_trend_sft.png" alt="SFT准确率变化趋势" width="400"/>
   <p>SFT方法的准确率变化趋势</p>
 </div>
 
