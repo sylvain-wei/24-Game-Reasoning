@@ -6,7 +6,6 @@
 
 <div align="center">
   <img src="images/examples/24game.png" alt="24 Game Example" width="400"/>
-  <p>24 Game Example</p>
 </div>
 
 <!-- <div align="center">

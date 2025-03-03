@@ -6,7 +6,6 @@
 
 <div align="center">
   <img src="images/examples/24game.png" alt="24点游戏示例" width="400"/>
-  <p>24点游戏示例</p>
 </div>
 
 <!-- <div align="center">

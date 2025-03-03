@@ -6,7 +6,7 @@ This directory contains the Supervised Fine-Tuning (SFT) dataset for the 24 Game
 
 - `train.parquet`: Training dataset
 - `val.parquet`: Validation dataset
-- `test.parquet`: Test dataset
+t
 
 ## Data Format
 
