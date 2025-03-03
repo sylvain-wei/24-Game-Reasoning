@@ -52,7 +52,7 @@ class ModelInference:
         :param prompt: 输入的文本提示
         :return: GPT-4的响应文本
         """
-        # client = OpenAI(api_key="sk-rtjgclzcdpketmgsdwrummuvfnigbuursvkqqucroiykqwpk", base_url="https://api.siliconflow.cn/v1")
+        # client = OpenAI(api_key="YOUR_KEY", base_url="https://api.siliconflow.cn/v1")
         # def _call_gpt_api(prompt):
         #     response = client.chat.completions.create(
         #         model="deepseek-ai/DeepSeek-V3" if not is_r1 else "deepseek-ai/DeepSeek-R1",  # 使用的模型
@@ -124,7 +124,7 @@ class ModelInference:
     def call_deepseek(self, prompts:Union[str, List[str]], asyn=True, max_workers=100, is_r1=False)->str:
         # TODO: 记得匿名化api_key
         # 初始化 OpenAI 客户端
-        # client = OpenAI(api_key="sk-244d58cde73d427e8cd51b88d0253e4c", base_url="https://api.deepseek.com")
+        # client = OpenAI(api_key="YOUR_KEY", base_url="https://api.deepseek.com")
         # 定义一个函数来调用 API
         # def _call_deepseek_api(prompt):
         #     response = client.chat.completions.create(
@@ -141,9 +141,9 @@ class ModelInference:
         # @backoff.on_exception(backoff.expo, openai.RateLimitError)
         
         # NOTE:硅基流动
-        # client = OpenAI(api_key="sk-rtjgclzcdpketmgsdwrummuvfnigbuursvkqqucroiykqwpk", base_url="https://api.siliconflow.cn/v1")
+        # client = OpenAI(api_key="YOUR_KEY", base_url="https://api.siliconflow.cn/v1")
         # NOTE 火山引擎
-        client = OpenAI(api_key="e803e617-8e79-493d-b1c1-4d010d389138", base_url="https://ark.cn-beijing.volces.com/api/v3")
+        client = OpenAI(api_key="YOUR_KEY", base_url="https://ark.cn-beijing.volces.com/api/v3")
         def _call_deepseek_api(prompt):
             # Calculate the delay based on your rate limit
             rate_limit_per_minute = 30000
