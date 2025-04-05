@@ -1,0 +1,48 @@
+data:
+  train_batch_size: 256
+  micro_batch_size: null # will be deprecated, use micro_batch_size_per_gpu
+  micro_batch_size_per_gpu: 4  # 每一个GPU上的batch_size
+  train_files: /home/weishaohang/workspace/24-Game-Reasoning/data/24game_sft/train.parquet # TODO: 训练集路径
+  val_files: /home/weishaohang/workspace/24-Game-Reasoning/data/24game_sft/val.parquet  # TODO: 验证集路径
+  prompt_key: question  # TODO: json格式数据中的prompt字段名，需要check一下
+  response_key: completion  # TODO: json格式数据中的response字段名，需要check一下
+  max_length: 8000    # tokenize时的最大长度
+  truncation: error # left, right or erro，前两个表示截断策略
+  balance_dp_token: False
+  chat_template: null
+# train_data:
+#   path: "/home/weishaohang/workspace/24-Game-Reasoning/data/24game_sft/train.parquet"
+# val_data:
+#   path: "/home/weishaohang/workspace/24-Game-Reasoning/data/24game_sft/val.parquet"
+model:
+  partial_pretrain: /home/weishaohang/workspace/models/models/Qwen/Qwen2.5-3B-Instruct  # 模型路径
+  fsdp_config:  # 下面开始是fsdp的配置
+    wrap_policy:
+      min_num_params: 0
+    cpu_offload: False  # 是否加载到CPU
+    offload_params: False # 是否将参数加载到CPU
+  external_lib: null
+  enable_gradient_checkpointing: False  # 是否启用梯度检查点策略
+  trust_remote_code: False  # 模型加载时的配置
+  lora_rank: 0  # Lora的rank，为0表示不启用lora，即全量训练。Set to positive value to enable LoRA (e.g., 32)
+  lora_alpha: 16  # LoRA的scaling factor
+  target_modules: all-linear  # Target modules for LoRA adaptation，Lora的target modules
+  use_liger: False
+optim:
+  lr: 1e-5
+  betas: [0.9, 0.95]
+  weight_decay: 0.01
+  warmup_steps_ratio: 0.1
+  clip_grad: 1.0
+ulysses_sequence_parallel_size: 1
+use_remove_padding: False
+trainer:
+  default_local_dir: /tmp/sft_model # 训练完后模型的保存路径
+  default_hdfs_dir: hdfs://tmp/experiments/gsm8k/gemma-1.1-7b-it/ # change the hdfs path here
+  resume_path: null # 中断后启用继续训练时的加载路径
+  project_name: 24game-sft
+  experiment_name: test
+  total_epochs: 4 # 训练轮次
+  total_training_steps: null  # 一般这里不写，代码中自动计算
+  logger: ['console']
+  seed: 1

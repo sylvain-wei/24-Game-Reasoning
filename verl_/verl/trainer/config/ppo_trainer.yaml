@@ -1,0 +1,177 @@
+# 数据相关配置
+data:
+  tokenizer: null # 会根据模型路径自动选择对应的tokenizer
+  train_files: /home/weishaohang/workspace/24-Game-Reasoning/data/24game_grpo/train.parquet  # TODO: 训练集路径，根据实际需要修改
+  val_files: /home/weishaohang/workspace/24-Game-Reasoning/data/24game_grpo/val.parquet  # TODO: 验证集路径，根据实际需要修改
+  prompt_key: prompt  # TODO: 数据中prompt字段的名称，PPO过程会基于此生成response
+  max_prompt_length: 512  # TODO: prompt的最大长度，根据任务和模型调整
+  max_response_length: 512  # TODO: 生成response的最大长度，根据任务调整
+  train_batch_size: 1024  # TODO: 训练的batch大小，根据GPU内存和任务复杂度调整
+  val_batch_size: null # 已弃用：验证数据集会作为整体发送给推理引擎，由引擎自行管理内存
+  return_raw_input_ids: False  # 当策略模型和奖励模型使用不同的tokenizer时设为True
+  return_raw_chat: False  # 是否返回原始对话内容（未经chat template处理）
+  shuffle: True  # 是否对数据集进行shuffle
+
+# Actor、Rollout和Reference模型相关配置
+actor_rollout_ref:
+  hybrid_engine: True  # 是否使用混合引擎
+  model:
+    path: /home/weishaohang/workspace/models/models/Qwen/Qwen2.5-3B-Instruct  # TODO: 模型路径，根据需要修改
+    external_lib: null  # 额外的库支持
+    override_config: { }  # 模型配置覆盖
+    enable_gradient_checkpointing: True  # 是否启用梯度检查点以节省内存
+    use_remove_padding: False  # 是否移除padding以提高效率
+  actor:
+    strategy: fsdp  # 分布式训练策略，目前支持fsdp或megatron
+    ppo_mini_batch_size: 256  # TODO: PPO更新时的mini-batch大小，影响收敛性和内存消耗
+    ppo_micro_batch_size: null # 已弃用，使用ppo_micro_batch_size_per_gpu
+    ppo_micro_batch_size_per_gpu: null  # 每个GPU的micro-batch大小，为null时自动计算
+    use_dynamic_bsz: False  # 是否使用动态batch size
+    ppo_max_token_len_per_gpu: 16384 # TODO: 每个GPU最大处理的token长度，根据GPU内存调整
+    grad_clip: 1.0  # 梯度裁剪值
+    clip_ratio: 0.2  # PPO算法的clip范围参数
+    entropy_coeff: 0.001  # 熵正则化系数
+    use_kl_loss: False # GRPO方法使用时设为True
+    kl_loss_coef: 0.001 # GRPO的KL散度系数
+    kl_loss_type: low_var_kl # GRPO的KL散度计算方式
+    ppo_epochs: 5  # TODO: 每批数据的训练轮数，如果为1则为on-policy，否则为off-policy
+    shuffle: False  # 是否打乱PPO的mini-batch
+    ulysses_sequence_parallel_size: 1 # 序列并行大小
+    optim:  # 优化器配置
+      lr: 1e-6  # TODO: 学习率，根据模型和任务调整
+      lr_warmup_steps_ratio: 0.  # 热身步数比例，运行时会注入总步数
+      min_lr_ratio: null   # 仅在warmup_style为cosine时有效
+      warmup_style: constant  # 热身方式：constant/cosine
+      total_training_steps: -1  # 总训练步数，由程序覆写
+    fsdp_config:  # FSDP配置
+      wrap_policy:
+        min_num_params: 0  # 参与FSDP的最小参数量
+      param_offload: False  # 是否将参数卸载到CPU
+      optimizer_offload: False  # 是否将优化器状态卸载到CPU
+      fsdp_size: -1  # FSDP大小，-1表示自动
+  ref:  # 参考模型配置(用于KL散度计算)
+    fsdp_config:
+      param_offload: False
+      wrap_policy:
+        min_num_params: 0
+    log_prob_micro_batch_size: null # 已弃用
+    log_prob_micro_batch_size_per_gpu: null  # 每个GPU计算log_prob的micro-batch大小
+    log_prob_use_dynamic_bsz: ${actor_rollout_ref.actor.use_dynamic_bsz}  # 继承actor配置
+    log_prob_max_token_len_per_gpu: ${actor_rollout_ref.actor.ppo_max_token_len_per_gpu}  # 继承actor配置
+    ulysses_sequence_parallel_size: ${actor_rollout_ref.actor.ulysses_sequence_parallel_size}  # 继承actor配置
+  rollout:  # 采样配置
+    name: vllm  # 采样引擎，使用vllm
+    temperature: 1.0  # TODO: 采样温度，影响生成多样性，越大越随机
+    top_k: -1 # vllm引擎使用-1，hf引擎使用0
+    top_p: 1  # TODO: 采样的概率阈值，小于1会截断低概率token
+    prompt_length: ${data.max_prompt_length}  # 继承data配置
+    response_length: ${data.max_response_length}  # 继承data配置
+    # vllm特有配置
+    dtype: bfloat16 # 计算精度，需与FSDP一致
+    gpu_memory_utilization: 0.5  # TODO: GPU内存使用率，可根据显存情况调整
+    ignore_eos: False  # 是否忽略EOS标记
+    enforce_eager: True  # 是否强制eager模式
+    free_cache_engine: True  # 是否释放cache
+    load_format: dummy_dtensor  # 加载格式
+    tensor_model_parallel_size: 2  # 模型并行大小
+    max_num_batched_tokens: 8192  # 批处理的最大token数
+    max_model_len: null  # 最大模型长度
+    max_num_seqs: 1024  # 最大序列数
+    log_prob_micro_batch_size: null # 已弃用
+    log_prob_micro_batch_size_per_gpu: null  # 每个GPU计算log_prob的micro-batch大小
+    log_prob_use_dynamic_bsz: ${actor_rollout_ref.actor.use_dynamic_bsz}  # 继承actor配置
+    log_prob_max_token_len_per_gpu: ${actor_rollout_ref.actor.ppo_max_token_len_per_gpu}  # 继承actor配置
+    disable_log_stats: True  # 禁用日志统计
+    enable_chunked_prefill: True  # 启用分块预填充，提高吞吐量
+    # hf rollout配置
+    do_sample: True  # 是否进行采样
+    # 生成多少个回复(样本数量)
+    n: 1 # GRPO时设为大于1的值
+
+# 价值模型(Critic)相关配置，GRPO方法不需要价值模型critic
+critic:
+  strategy: fsdp  # 分布式训练策略
+  optim:  # 优化器配置
+    lr: 1e-5  # TODO: 价值网络学习率，通常略高于策略网络
+    lr_warmup_steps_ratio: 0.  # 热身步数比例
+    min_lr_ratio: null   # 仅在warmup_style为cosine时有效
+    warmup_style: constant  # 热身方式
+    total_training_steps: -1  # 总训练步数，由程序覆写
+  model:  # 模型配置
+    path: ~/models/deepseek-llm-7b-chat  # TODO: 价值模型路径，通常与策略模型相同
+    tokenizer_path: ${actor_rollout_ref.model.path}  # 使用策略模型的tokenizer
+    override_config: { }  # 模型配置覆盖
+    external_lib: ${actor_rollout_ref.model.external_lib}  # 继承策略模型配置
+    enable_gradient_checkpointing: True  # 是否启用梯度检查点
+    use_remove_padding: False  # 是否移除padding
+    fsdp_config:  # FSDP配置
+      param_offload: False
+      optimizer_offload: False
+      wrap_policy:
+        min_num_params: 0
+      fsdp_size: -1
+  ppo_mini_batch_size: ${actor_rollout_ref.actor.ppo_mini_batch_size}  # 继承策略模型配置
+  ppo_micro_batch_size: null # 已弃用
+  ppo_micro_batch_size_per_gpu: null  # 每个GPU的micro-batch大小
+  forward_micro_batch_size: ${critic.ppo_micro_batch_size}  # 前向传播的micro-batch大小
+  forward_micro_batch_size_per_gpu: ${critic.ppo_micro_batch_size_per_gpu}  # 每个GPU前向传播的micro-batch大小
+  use_dynamic_bsz: ${actor_rollout_ref.actor.use_dynamic_bsz}  # 继承策略模型配置
+  ppo_max_token_len_per_gpu: 32768 # 每个GPU最大处理的token长度，通常是策略网络的2倍
+  forward_max_token_len_per_gpu: ${critic.ppo_max_token_len_per_gpu}  # 前向传播每个GPU的最大token长度
+  ulysses_sequence_parallel_size: 1 # 序列并行大小
+  ppo_epochs: ${actor_rollout_ref.actor.ppo_epochs}  # 继承策略模型配置
+  shuffle: ${actor_rollout_ref.actor.shuffle}  # 继承策略模型配置
+  grad_clip: 1.0  # 梯度裁剪值
+  cliprange_value: 0.5  # 价值裁剪范围
+
+# 奖励模型相关配置
+reward_model:
+  enable: False  # TODO: 是否启用模型奖励，如使用外部奖励模型则设为True
+  strategy: fsdp  # 分布式训练策略
+  model:  # 模型配置
+    input_tokenizer: ${actor_rollout_ref.model.path}  # 如果chat template相同则设为null
+    path: ~/models/FsfairX-LLaMA3-RM-v0.1  # TODO: 奖励模型路径，使用时需修改
+    external_lib: ${actor_rollout_ref.model.external_lib}  # 继承策略模型配置
+    use_remove_padding: False  # 是否移除padding
+    fsdp_config:  # FSDP配置
+      min_num_params: 0
+      param_offload: False
+      fsdp_size: -1
+  micro_batch_size: null # 已弃用
+  micro_batch_size_per_gpu: 1 # TODO: 每个GPU的micro-batch大小，使用时需设置具体数值
+  max_length: null  # 最大长度
+  ulysses_sequence_parallel_size: 1 # 序列并行大小
+  use_dynamic_bsz: ${critic.use_dynamic_bsz}  # 继承价值模型配置
+  forward_max_token_len_per_gpu: ${critic.forward_max_token_len_per_gpu}  # 继承价值模型配置
+  reward_manager: game24  # TODO: 奖励管理器类型，可选naive/prime/game24等
+
+# PPO算法相关配置
+algorithm:
+  gamma: 1.0  # 折扣系数，通常对话任务设为1.0
+  lam: 1.0  # GAE-Lambda参数
+  adv_estimator: gae  # TODO:优势函数估计器类型，如果是GRPO则设为grpo（一般在.sh脚本中设置）
+  kl_penalty: kl  # KL散度惩罚计算方式
+  kl_ctrl:  # KL散度控制
+    type: fixed  # 控制类型：fixed固定值
+    kl_coef: 0.001  # KL散度系数
+
+# 训练器配置
+trainer:
+  total_epochs: 3  # TODO: 总训练轮数，根据任务和数据量调整
+  total_training_steps: null  # 总训练步数，为null时根据epochs计算
+  project_name: verl_examples  # TODO: 项目名称，用于日志和检查点
+  experiment_name: 24game_qwen25_3b_math  # TODO: 实验名称，根据任务修改
+  logger: [ 'console', 'wandb' ]  # TODO: 日志类型，不需要wandb可以只保留'console'
+  val_generations_to_log_to_wandb: 0  # 记录到wandb的验证生成样本数量
+  nnodes: 1  # TODO: 训练节点数，分布式训练时调整
+  n_gpus_per_node: 4  # TODO: 每个节点的GPU数量，根据硬件调整
+  save_freq: -1  # 保存频率，-1表示只在最后保存
+  # auto: 尝试恢复最后一个检查点，找不到则从头开始
+  resume_mode: auto # 恢复模式: auto或指定路径
+  resume_from_path: False  # 是否从指定路径恢复
+  test_freq: -1  # 测试频率，-1表示只在最后测试
+  critic_warmup: 0  # 价值网络预热步数
+  default_hdfs_dir: null  # 默认HDFS目录
+  remove_previous_ckpt_in_save: False  # 保存时是否删除先前的检查点
+  del_local_ckpt_after_load: False  # 加载后是否删除本地检查点
+  default_local_dir: checkpoints/${trainer.project_name}/${trainer.experiment_name}  # 默认本地目录
