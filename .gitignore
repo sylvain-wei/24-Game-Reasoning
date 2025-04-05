@@ -29,9 +29,9 @@ ENV/
 env/
 
 # 模型检查点和大型文件
-verl_/checkpoints/
-verl_/wandb/
-verl_/outputs/
+verl/checkpoints/
+verl/wandb/
+verl/outputs/
 *.pt
 *.pth
 *.bin
@@ -85,7 +85,7 @@ data/**/*.txt
 
 # 保留必要的目录结构
 !data/
-!verl_/
+!verl/
 !scripts/
 !templates/
 !utils/
